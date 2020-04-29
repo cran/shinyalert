@@ -14,14 +14,12 @@ shinyalert
 
 Easily create pretty popup messages (modals) in Shiny <br><br>
 <a href="https://daattali.com/shiny/shinyalert-demo/">Demo</a> ·
-Copyright 2018 <a href="https://deanattali.com">Dean Attali</a>
+Copyright 2020 <a href="https://deanattali.com">Dean Attali</a>
 
 </h4>
 
 <p align="center">
 
-<a href="https://www.paypal.me/daattali/20">
-<img src="https://i.imgur.com/vCIGFrH.png" alt="Donate" /> </a>
 <a href="https://travis-ci.org/daattali/shinyalert">
 <img src="https://travis-ci.org/daattali/shinyalert.svg?branch=master" alt="Build Status" />
 </a> <a href="https://cran.r-project.org/package=shinyalert">
@@ -37,34 +35,57 @@ Copyright 2018 <a href="https://deanattali.com">Dean Attali</a>
 `shinyalert` lets you easily create pretty popup messages (modals) in
 Shiny.
 
-A modal can contain text, images, OK/Cancel buttons, an input to get a
-response from the user, and many more customizable options. The value of
-the modal can be retrieved in Shiny using an input or using callback
-functions. See the [demo Shiny
-app](https://daattali.com/shiny/shinyalert-demo/) online for examples.
+Modals can contain text, images, OK/Cancel buttons, an input to get a
+response from the user, and many more customizable options. A modal can
+also have a timer to close automatically. The value of the modal can be
+retrieved in Shiny using an input or using callback functions. See the
+[demo Shiny app](https://daattali.com/shiny/shinyalert-demo/) online for
+examples.
 
-**If you need any Shiny help, I'm [available for
-consulting](http://attalitech.com/). If you find shinyalert useful,
-please consider supporting my efforts developing open-source R
-packages\!**
+**If you need any Shiny help, I’m [available for
+consulting](https://attalitech.com/). If you find shinyalert useful,
+please consider supporting my open-source development.**
 
 <p align="center">
 
-<a href="https://www.paypal.me/daattali/20">
-<img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" />
+<a style="display: inline-block;" href="https://paypal.me/daattali">
+<img height="35" src="https://camo.githubusercontent.com/0e9e5cac101f7093336b4589c380ab5dcfdcbab0/68747470733a2f2f63646e2e6a7364656c6976722e6e65742f67682f74776f6c66736f6e2f70617970616c2d6769746875622d627574746f6e40312e302e302f646973742f627574746f6e2e737667" />
 </a>
+<a style="display: inline-block; margin-left: 10px;" href="https://github.com/sponsors/daattali">
+<img height="35" src="https://i.imgur.com/034B8vq.png" /> </a>
 
 </p>
 
 # Table of contents
 
+  - [Examples](#examples)
   - [Overview](#overview)
   - [Installation](#install)
   - [Input modals](#input-modals)
   - [Modal return value](#return-value)
   - [Callbacks](#callbacks)
+  - [Chaining modals](#chaining)
+  - [Using in Rmarkdown files](#rmd)
   - [Comparison with Shiny modals](#shiny-comparison)
   - [Contributions](#contributions)
+
+<h2 id="examples">
+
+Examples
+
+</h2>
+
+Example 1: [Simple modal](#overview)
+
+![basic modal](inst/img/shinyalert-basic.gif)
+
+Example 2: [Input modal](#input-modals)
+
+![input modal](inst/img/shinyalert-input.gif)
+
+Example 3: [Chaining modals](#chaining)
+
+![chaining modals](inst/img/shinyalert-chain.gif)
 
 <h2 id="overview">
 
@@ -79,11 +100,9 @@ Shiny.
 Simply call `shinyalert()` with the desired arguments, such as a title
 and text, and a modal will show up. In order to be able to call
 `shinyalert()` in a Shiny app, you must first call `useShinyalert()`
-anywhere in the app's UI.
+anywhere in the app’s UI.
 
-![basic modal](inst/img/shinyalert-basic.gif "fig:")
-
-Here is some minimal Shiny app code that creates the above modal:
+Here is some minimal Shiny app code that creates a modal:
 
     library(shiny)
     library(shinyalert)
@@ -102,13 +121,6 @@ Here is some minimal Shiny app code that creates the above modal:
     
     shinyApp(ui, server)
 
-It's also possible to ask the user to enter input in a modal.
-
-![input modal](inst/img/shinyalert-input.gif "fig:")
-
-The modal can also have a "Cancel" button, as well as many other
-customizable options.
-
 <h2 id="install">
 
 Installation
@@ -121,8 +133,8 @@ To install the stable CRAN version:
 
 To install the latest development version from GitHub:
 
-    install.packages("devtools")
-    devtools::install_github("daattali/shinyalert")
+    install.packages("remotes")
+    remotes::install_github("daattali/shinyalert")
 
 <h2 id="input-modals">
 
@@ -153,17 +165,18 @@ Modals created with `shinyalert` have a return value when they exit.
 
 When there is an input field in the modal (`type="input"`), the value of
 the modal is the value the user entered. When there is no input field in
-the modal, the value of the modal is `TRUE` if the user clicked the "OK"
-button, and `FALSE` if the user clicked the "Cancel" button.
+the modal, the value of the modal is `TRUE` if the user clicked the “OK”
+button, and `FALSE` if the user clicked the “Cancel” button.
 
 When the user exits the modal using the Escape key or by clicking
-outside of the modal, the return value is `FALSE` (as if the "Cancel"
+outside of the modal, the return value is `FALSE` (as if the “Cancel”
 button was clicked). If the `timer` parameter is used and the modal
 closes automatically as a result of the timer, no value is returned from
 the modal.
 
-The return value of the modal can be accessed via `input$shinyalert` in
-the Shiny server's code, as if it were a regular Shiny input. The return
+The return value of the modal can be accessed via `input$shinyalert` (or
+using a different input ID if you specify the `inputId` parameter) in
+the Shiny server’s code, as if it were a regular Shiny input. The return
 value can also be accessed using the *[modal callbacks](#callbacks)*.
 
 <h2 id="callbacks">
@@ -178,9 +191,9 @@ arguments are provided). These are functions that get called, either in
 R or in JavaScript, when the modal exits.
 
 For example, using the following `shinyalert` code will result in a
-modal with an input field. After the user clicks "OK", a hello message
+modal with an input field. After the user clicks “OK”, a hello message
 will be printed to both the R console and in a native JavaScript alert
-box. You don't need to provide both callback functions, but in this
+box. You don’t need to provide both callback functions, but in this
 example both are used for demonstration.
 
     shinyalert(
@@ -202,18 +215,64 @@ that case.
       callbackJS = "function(x) { if (x !== false) { alert('Hello ' + x); } }"
     )
 
+<h2 id="chaining">
+
+Chaining modals
+
+</h2>
+
+It’s possible to chain modals (call multiple modals one after another)
+by making a `shinyalert()` call inside a shinyalert callback or using
+the return value of a previous modal. For example:
+
+    shinyalert(
+      title = "What is your name?", type = "input",
+      callbackR = function(value) { shinyalert(paste("Welcome", value)) }
+    )
+
+<h2 id="rmd">
+
+Using in Rmarkdown files
+
+</h2>
+
+You can use `shinyalert` in Rmarkdown documents by using the `rmd =
+TRUE` parameter. This only works in interactive Rmd documents (when
+`runtime: shiny` is used in the YAML).
+
+    ---
+    output: html_document
+    runtime: shiny
+    ---
+    
+    ```{r setup, include=FALSE}
+    knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+    ```
+    
+    ```{r}
+    library(shinyalert)
+    
+    useShinyalert(rmd = TRUE)
+    textInput("name", "Name")
+    actionButton("button", "Click me")
+    
+    observeEvent(input$button, {
+     shinyalert(title = "Hey", text = input$name)
+    })
+    ```
+
 <h2 id="shiny-comparison">
 
 Comparison with Shiny modals
 
 </h2>
 
-Doesn't Shiny already have support for modals?
+Doesn’t Shiny already have support for modals?
 
 Yes, it does.
 
-And Shiny's modals are more powerful in some ways than `shinyalert`
-modals: Shiny's native modals (`showModal()`+`modalDialog()`) can
+And Shiny’s modals are more powerful in some ways than `shinyalert`
+modals: Shiny’s native modals (`showModal()`+`modalDialog()`) can
 contain multiple input fields and even outputs.
 
 I created `shinyalert` for two reasons: first of all, I started working
@@ -221,7 +280,7 @@ on it well before Shiny had modals. But I decided to keep working on it
 and release it even afterwards because I find `shinyalert` to be easier
 to use and to result in much nicer modals. There are also some extra
 features in `shinyalert`, such as the callback functions and the timer.
-But ultimately it's a matter of convenience and aesthetics.
+But ultimately it’s a matter of convenience and aesthetics.
 
 <h2 id="contributions">
 
@@ -236,6 +295,10 @@ want to request a feature/report a bug, or make a pull request if you
 can contribute.
 
 Lastly, if you find shinyalert useful, please consider [supporting
-me](https://www.paypal.me/daattali/20) for the countless hours I've
+me](https://www.paypal.me/daattali/20) for the countless hours I’ve
 spent building, documenting, and supporting various open-source packages
 :)
+
+If you’re interested in the history of this package, you can read the
+[blog post](https://deanattali.com/blog/shinyalert-package) I created
+when releasing the package.

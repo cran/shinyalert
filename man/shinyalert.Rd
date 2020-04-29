@@ -4,14 +4,31 @@
 \alias{shinyalert}
 \title{Display a popup message (modal) in Shiny}
 \usage{
-shinyalert(title = "", text = "", type = "", closeOnEsc = TRUE,
-  closeOnClickOutside = FALSE, html = FALSE, showCancelButton = FALSE,
-  showConfirmButton = TRUE, inputType = "text", inputValue = "",
-  inputPlaceholder = "", confirmButtonText = "OK",
-  confirmButtonCol = "#AEDEF4", cancelButtonText = "Cancel", timer = 0,
-  animation = TRUE, imageUrl = NULL, imageWidth = 100,
-  imageHeight = 100, className = "", callbackR = NULL,
-  callbackJS = NULL)
+shinyalert(
+  title = "",
+  text = "",
+  type = "",
+  closeOnEsc = TRUE,
+  closeOnClickOutside = FALSE,
+  html = FALSE,
+  showCancelButton = FALSE,
+  showConfirmButton = TRUE,
+  inputType = "text",
+  inputValue = "",
+  inputPlaceholder = "",
+  confirmButtonText = "OK",
+  confirmButtonCol = "#AEDEF4",
+  cancelButtonText = "Cancel",
+  timer = 0,
+  animation = TRUE,
+  imageUrl = NULL,
+  imageWidth = 100,
+  imageHeight = 100,
+  className = "",
+  callbackR = NULL,
+  callbackJS = NULL,
+  inputId = "shinyalert"
+)
 }
 \arguments{
 \item{title}{The title of the modal.}
@@ -82,6 +99,10 @@ Possible values: \code{FALSE}, \code{TRUE}, \code{"slide-from-top"},
 
 \item{callbackJS}{A JavaScript function to call when the modal exits. See the
 'Modal return value' and 'Callbacks' sections below.}
+
+\item{inputId}{The input ID that will be used to retrieve the value of this
+modal (defualt: \code{"shinyalert"}). You can access the value of the modal
+with \code{input$<inputId>}.}
 }
 \description{
 A modal can contain text, images, OK/Cancel buttons, an input to get a
@@ -123,8 +144,9 @@ the modal, the return value is \code{FALSE} (as if the "Cancel" button was
 clicked). If the \code{timer} parameter is used and the modal closes
 automatically as a result of the timer, no value is returned from the modal.
 
-The return value of the modal can be accessed via \code{input$shinyalert} in
-the Shiny server's code, as if it were a regular Shiny input. The return
+The return value of the modal can be accessed via \code{input$shinyalert}
+(or using a different input ID if you specify the \code{inputId} parameter)
+in the Shiny server's code, as if it were a regular Shiny input. The return
 value can also be accessed using the modal callbacks (see below).
 }
 
@@ -164,7 +186,23 @@ that case.
 }
 }
 
+\section{Chaining modals}{
+
+It's possible to chain modals (call multiple modals one after another) by
+making a \code{shinyalert()} call inside a shinyalert callback or using the
+return value of a previous modal. For example:
+
+\preformatted{
+  shinyalert(
+    title = "What is your name?", type = "input",
+    callbackR = function(value) { shinyalert(paste("Welcome", value)) }
+  )
+}
+}
+
 \examples{
+
+# Example 1: Simple modal
 if (interactive()) {
   library(shiny)
   library(shinyalert)
@@ -178,6 +216,27 @@ if (interactive()) {
       observeEvent(input$btn, {
         # Show a simple modal
         shinyalert(title = "You did it!", type = "success")
+      })
+    }
+  )
+}
+
+# Example 2: Input modal calling another modal in its callback
+if (interactive()) {
+  library(shiny)
+  library(shinyalert)
+
+  shinyApp(
+    ui = fluidPage(
+      useShinyalert(),  # Set up shinyalert
+      actionButton("btn", "Greet")
+    ),
+    server = function(input, output) {
+      observeEvent(input$btn, {
+        shinyalert(
+          title = "What is your name?", type = "input",
+          callbackR = function(value) { shinyalert(paste("Welcome", value)) }
+        )
       })
     }
   )

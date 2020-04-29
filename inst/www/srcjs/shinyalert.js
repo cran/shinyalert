@@ -1,3 +1,4 @@
+var swalService = new SwalService({showPendingMessage: false});
 shinyalert = {};
 shinyalert.num = 0;  // Used to make the timer work
 
@@ -21,24 +22,25 @@ Shiny.addCustomMessageHandler('shinyalert.show', function(params) {
   }
 
   var callback = function(value) {
-    Shiny.onInputChange(params['returnId'], value);
+    if ('compareVersion' in Shiny &&
+        Shiny.compareVersion(Shiny.version, ">=", "1.1.0") ) {
+      Shiny.setInputValue(params['inputId'], value, {priority: "event"});
+    } else {
+      Shiny.onInputChange(params['inputId'], value);
+    }
     callbackJS(value);
     callbackR(value);
-    delete params['returnId'];
+    delete params['inputId'];
   }
 
   if (params['timer'] != 0) {
     setTimeout(function(x) {
       if (x == shinyalert.num) {
-        swal.close();
+        swalService.close();
       }
     }, params['timer'], shinyalert.num);
   }
   delete params['timer'];
 
-  swal(params, callback);
-});
-
-Shiny.addCustomMessageHandler('shinyalert.close', function(message) {
-  swal.close();
+  swalService.swal(params, callback);
 });
