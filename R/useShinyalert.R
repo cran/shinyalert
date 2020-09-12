@@ -34,7 +34,6 @@ useShinyalert <- function(rmd = FALSE) {
 
   shiny::addResourcePath("resources",
                          system.file("www", package = "shinyalert"))
-
   insert_into_doc <- if (rmd) shiny::tagList else shiny::tags$head
 
   shiny::singleton(
@@ -54,6 +53,10 @@ useShinyalert <- function(rmd = FALSE) {
       ),
       shiny::tags$script(
         src = file.path("resources", "srcjs", "shinyalert.js")
+      ),
+      shiny::tags$link(
+        rel = "stylesheet",
+        href = file.path("resources", "css", "shinyalert.css")
       )
     )
   )

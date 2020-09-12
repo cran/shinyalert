@@ -1,9 +1,8 @@
 #' Display a popup message (modal) in Shiny
 #'
-#' A modal can contain text, images, OK/Cancel buttons, an input to get a
-#' response from the user, and many more customizable options. The value of the
-#' modal can be retrieved in Shiny using \code{input$shinyalert} or using the
-#' two callback parameters. See the
+#' Modals can contain text, images, OK/Cancel buttons, Shiny inputs, and Shiny outputs
+#' (such as plots and tables). A modal can also have a timer to close automatically,
+#' and you can specify custom code to run when a modal closes. See the
 #' \href{https://daattali.com/shiny/shinyalert-demo/}{demo Shiny app}
 #' online for examples or read the
 #' \href{https://github.com/daattali/shinyalert#readme}{full README}.\cr\cr
@@ -11,7 +10,8 @@
 #' \code{\link[shinyalert]{useShinyalert}} in the app's UI.
 #'
 #' @param title The title of the modal.
-#' @param text The modal's text.
+#' @param text The modal's text. Can either be simple text, or Shiny tags (including
+#' Shiny inputs and outputs). If using Shiny tags, then you must also set `html=TRUE`.
 #' @param type The type of the modal. There are 4 built-in types which will show
 #' a corresponding icon: \code{"warning"}, \code{"error"}, \code{"success"} and
 #' \code{"info"}. You can also set \code{type="input"} to get a prompt
@@ -42,9 +42,7 @@
 #' (must be a HEX value).
 #' @param cancelButtonText The text in the "Cancel" button.
 #' @param timer The amount of time (in milliseconds) before the modal should
-#' close automatically. Use \code{0} to not close the modal automatically
-#' (default). If the modal closes automatically, no value is returned from the
-#' modal. See the 'Modal return value' section below.
+#' close automatically. Use \code{0} to not close the modal automatically (default).
 #' @param animation If \code{FALSE}, the modal's animation will be disabled.
 #' Possible values: \code{FALSE}, \code{TRUE}, \code{"slide-from-top"},
 #' \code{"slide-from-bottom"}, \code{"pop"} (the default animation when
@@ -60,48 +58,63 @@
 #' @param inputId The input ID that will be used to retrieve the value of this
 #' modal (defualt: \code{"shinyalert"}). You can access the value of the modal
 #' with \code{input$<inputId>}.
-#' @section Input modals:
-#' Usually the purpose of a modal is simply informative, to show some
-#' information to the user. However, the modal can also be used to retrieve an
-#' input from the user by setting the \code{type = "input"} parameter.
+#' @param size The size (width) of the modal. One of `"xs"` for extra small, `"s"`
+#' for small (default), `"m"` for medium, or `"l"` for large.
+#' @param immediate If `TRUE`, close any previously opened alerts and display
+#' the current one immediately.
 #'
-#' Only a single input can be used inside a modal. By default, the input will be
-#' a text input, but you can use other HTML input types by specifying the
-#' \code{inputType} parameter. For example, \code{inputType = "number"} will
-#' provide the user with a numeric input in the modal.
+#' @return An ID that can be used by \code{\link{closeAlert}} to close this
+#' specific alert.
 #'
-#' See the 'Modal return value' and 'Callbacks' sections below for information
-#' on how to access the value entered by the user.
+#' @section Simple input modals:
+#' Usually the purpose of a modal is simply informative, to show some information
+#' to the user. However, the modal can also be used to retrieve an input from the
+#' user by setting the `type = "input"` parameter.
+#'
+#' When using a `type="input"` modal, only a single input can be used. By default,
+#' the input will be a text input, but you can use other input types by specifying
+#' the `inputType` parameter (for example `inputType = "number"` will expose a
+#' numeric input).
+#'
+#' @section Shiny inputs/outputs in modals:
+#' While simple input modals are useful for retrieving input from the user, they
+#' aren't very flexible - they only allow one input. You can include any Shiny UI
+#' code in a modal, including Shiny inputs and outputs (such as plots), by
+#' providing Shiny tags in the `text` parameter and setting `html=TRUE`. For
+#' example, the following code would produce a modal with two inputs:
+#'
+#' \preformatted{
+#'   shinyalert(html = TRUE, text = tagList(
+#'     textInput("name", "What's your name?", "Dean"),
+#'     numericInput("age", "How old are you?", 30),
+#'   ))
+#' }
 #'
 #' @section Modal return value:
-#' Modals created with \code{shinyalert} have a return value when they exit.
+#' Modals created with {shinyalert} have a return value when they exit.
 #'
-#' When there is an input field in the modal (\code{type="input"}), the value of
-#' the modal is the value the user entered. When there is no input field in the
-#' modal, the value of the modal is \code{TRUE} if the user clicked the "OK"
-#' button, and \code{FALSE} if the user clicked the "Cancel" button.
+#' When using a simple input modal (`type="input"`), the value of the modal is
+#' the value the user entered. Otherwise, the value of the modal is `TRUE` if
+#' the user clicked the "OK" button, and `FALSE` if the user dismissed the modal
+#' (either by clicking the "Cancel" button, using the Escape key, clicking outside
+#' the modal, or letting the `timer` run out).
 #'
-#' When the user exits the modal using the Escape key or by clicking outside of
-#' the modal, the return value is \code{FALSE} (as if the "Cancel" button was
-#' clicked). If the \code{timer} parameter is used and the modal closes
-#' automatically as a result of the timer, no value is returned from the modal.
-#'
-#' The return value of the modal can be accessed via \code{input$shinyalert}
-#' (or using a different input ID if you specify the \code{inputId} parameter)
-#' in the Shiny server's code, as if it were a regular Shiny input. The return
-#' value can also be accessed using the modal callbacks (see below).
+#' The return value of the modal can be accessed via `input$shinyalert` (or using
+#' a different input ID if you specify the `inputId` parameter), as if it were a
+#' regular Shiny input. The return value can also be accessed using the
+#' *modal callbacks* (see below).
 #'
 #' @section Callbacks:
-#' The return value of the modal is passed as an argument to the \code{callbackR}
-#' and \code{callbackJS} functions (if a \code{callbackR} or \code{callbackJS}
-#' arguments are provided). These are functions that get called, either in R or
-#' in JavaScript, when the modal exits.
+#' The return value of the modal is passed as an argument to the `callbackR`
+#' and `callbackJS` functions (if a `callbackR` or `callbackJS` arguments
+#' are provided). These functions get called (in R and in JavaScript, respectively)
+#' when the modal exits.
 #'
-#' For example, using the following \code{shinyalert} code will result in a
-#' modal with an input field. After the user clicks "OK", a hello message will
-#' be printed to both the R console and in a native JavaScript alert box. You
-#' don't need to provide both callback functions, but in this example both are
-#' used for demonstration.
+#' For example, using the following {shinyalert} code will result in a modal with
+#' an input field. After the user clicks "OK", a hello message will be printed
+#' to both the R console and in a native JavaScript alert box. You don't need to
+#' provide both callback functions, but in this example both are used for
+#' demonstration.
 #'
 #' \preformatted{
 #'   shinyalert(
@@ -114,7 +127,7 @@
 #' \code{callbackJS} function uses JavaScript code.
 #'
 #' Since closing the modal with the Escape key results in a return value of
-#' \code{FALSE}, the callback functions can be modified to not print hello in
+#' \code{FALSE}, the callback functions can be modified to not print anything in
 #' that case.
 #'
 #' \preformatted{
@@ -158,7 +171,7 @@
 #'   )
 #' }
 #'
-#' # Example 2: Input modal calling another modal in its callback
+#' # Example 2: Simple input modal calling another modal in its callback
 #' if (interactive()) {
 #'   library(shiny)
 #'   library(shinyalert)
@@ -175,6 +188,33 @@
 #'           callbackR = function(value) { shinyalert(paste("Welcome", value)) }
 #'         )
 #'       })
+#'     }
+#'   )
+#' }
+#'
+#' # Example 3: Modal with Shiny tags (input and output)
+#' if (interactive()) {
+#'   library(shiny)
+#'   library(shinyalert)
+#'
+#'   shinyApp(
+#'     ui = fluidPage(
+#'       useShinyalert(),  # Set up shinyalert
+#'       actionButton("btn", "Go")
+#'     ),
+#'     server = function(input, output) {
+#'       observeEvent(input$btn, {
+#'         shinyalert(
+#'           html = TRUE,
+#'           text = tagList(
+#'             numericInput("num", "Number", 10),
+#'             "The square of the number is",
+#'             textOutput("square", inline = TRUE)
+#'           )
+#'         )
+#'       })
+#'
+#'       output$square <- renderText({ input$num*input$num })
 #'     }
 #'   )
 #' }
@@ -202,7 +242,9 @@ shinyalert <- function(
   className = "",
   callbackR = NULL,
   callbackJS = NULL,
-  inputId = "shinyalert"
+  inputId = "shinyalert",
+  size = "s",
+  immediate = FALSE
 ) {
 
   params <- as.list(environment())
@@ -213,12 +255,15 @@ shinyalert <- function(
   if (!type %in% c("", "warning", "error", "success", "info", "input")) {
     stop("type=", type, " is not supported.", call. = FALSE)
   }
+  if (!size %in% c("xs", "s", "m", "l")) {
+    stop("size=", size, " is not supported.", call. = FALSE)
+  }
   if (!is.null(imageUrl) && imageUrl == "") {
     imageUrl <- NULL
   }
 
   # Rename some parameters that shinyalert tries to use more sensible names for
-  params[['customClass']] <- params[['className']]
+  params[['customClass']] <- paste0(params[['className']], " alert-size-", size)
   params[['allowEscapeKey']] <- params[['closeOnEsc']]
   params[['allowOutsideClick']] <- params[['closeOnClickOutside']]
   params[['confirmButtonColor']] <- params[['confirmButtonCol']]
@@ -232,19 +277,16 @@ shinyalert <- function(
 
   session <- getSession()
 
+  if (immediate) {
+    closeAlert()
+  }
+
   # If an R callback function is provided, create an observer for it
-  if (!is.null(callbackR)) {
-
-    # Don't serialize the R callback because if it's a function, its entire
-    # enclosing environment will be captured and it can potentially be huge
-    # and slow
-    paramsSerialize <- params
-    paramsSerialize[['callbackR']] <- NULL
-
-    cbid <- sprintf("shinyalert-%s-%s",
-                    digest::digest(paramsSerialize),
-                    as.integer(stats::runif(1, 0, 1e9)))
-    params[['cbid']] <- session$ns(cbid)
+  cbid <- paste0("__shinyalert-", gsub("-", "", uuid::UUIDgenerate()))
+  params[['cbid']] <- session$ns(cbid)
+  if (is.null(callbackR)) {
+    params[['callbackR']] <- FALSE
+  } else {
     shiny::observeEvent(session$input[[cbid]], {
       if (length(formals(callbackR)) == 0) {
         callbackR()
@@ -252,11 +294,41 @@ shinyalert <- function(
         callbackR(session$input[[cbid]])
       }
     }, once = TRUE)
-    params[['callbackR']] <- NULL
+    params[['callbackR']] <- TRUE
+  }
+
+
+  if (html && nzchar(params[["text"]])) {
+    if (type == "input") {
+      stop("Cannot use 'input' type and HTML together. You must supply your own Shiny inputs when using HTML.", call. = FALSE)
+    }
+
+    shiny::insertUI(
+      "head", "beforeEnd", immediate = FALSE,
+      shiny::tags$head(
+        htmltools::attachDependencies(
+          "",
+          htmltools::findDependencies(params[["text"]])
+        )
+      )
+    )
+    params[["text"]] <- as.character(params[["text"]])
   }
 
   params[["inputId"]] <- session$ns(params[["inputId"]])
   session$sendCustomMessage(type = "shinyalert.show", message = params)
 
-  invisible(NULL)
+  invisible(params[["cbid"]])
+}
+
+#' Close a shinyalert popup message
+#' @param num Number of popup messages to close. If set to 0 (default) then all
+#' messages are closed. This is only useful if you have multiple popups queued up.
+#' @param id To close a specific popup, use the ID returned by \code{\link{shinyalert}}.
+#' Note that if `id` is specified, then `num` is ignored.
+#' @export
+closeAlert <- function(num = 0, id = NULL) {
+  session <- getSession()
+  session$sendCustomMessage(type = "shinyalert.closeAlert",
+                            message = list(count = num, cbid = id))
 }

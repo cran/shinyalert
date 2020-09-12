@@ -9,6 +9,7 @@ share <- list(
 )
 
 fluidPage(
+  shinydisconnect::disconnectMessage2(),
   title = paste0("shinyalert package ", as.character(packageVersion("shinyalert"))),
   tags$head(
     includeCSS(file.path('www', 'style.css')),
@@ -73,6 +74,7 @@ fluidPage(
     ),
     column(
       3,
+      selectInput("size", "Size", c("xs", "s", "m", "l"), "s"),
       selectInput("type", "Type",
                   choices = c("<none>", "input", "warning", "error", "success", "info"),
                   selected = "success"),
@@ -110,17 +112,16 @@ fluidPage(
       checkboxInput("animation", "Animation", TRUE)
     )
   ),
-  hr(),
   fluidRow(
-    "Modal return value (useful when ", tags$code('type="input"'), "):",
-    textOutput("return", inline = TRUE),
-    br(), br(),
-    div(
-      id = "code-container",
-      class = "collapse",
-      verbatimTextOutput("code")
-    ),
-    tags$button("Show code", href = "javascript:void()", class = "btn btn-default",
-           `data-toggle` = "collapse", `data-target` = "#code-container"), br(), br()
+    column(
+      12,
+      strong("Modal return value (useful when Type is \"input\"):"),
+      textOutput("return", inline = TRUE)
+    )
+  ),
+  fluidRow(
+    column(
+      12, h3("Generated code"), verbatimTextOutput("code")
+    )
   )
 )
