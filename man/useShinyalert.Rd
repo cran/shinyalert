@@ -4,21 +4,28 @@
 \alias{useShinyalert}
 \title{Set up a Shiny app to use shinyalert}
 \usage{
-useShinyalert(rmd = FALSE)
+useShinyalert(rmd, force = FALSE)
 }
 \arguments{
-\item{rmd}{Set this to \code{TRUE} if using \code{shinyalert}
-inside an interactive R markdown document. The YAML of the Rmd file must have
-\code{runtime: shiny}.}
+\item{rmd}{Deprecated, do not use this parameter.}
+
+\item{force}{Set to \code{TRUE} to force pre-loading the {shinyalert} scripts. If
+\code{FALSE} (default), you will get a warning saying this function is not required.}
 }
 \value{
 Scripts that \code{shinyalert} requires that are automatically
 inserted to the app's \code{<head>} tag.
 }
 \description{
-This function must be called from a Shiny app's UI in order for the
-\code{\link[shinyalert]{shinyalert}} function to work.\cr\cr
-You can call \code{useShinyalert()} from anywhere inside the UI.
+\strong{This function is no longer required.}\cr\cr
+The first time a {shinyalert} message is shown, the required scripts are
+\emph{automatically} inserted to the Shiny app. Usually this is not an issue, but
+in some unique cases this can sometimes cause the modal to appear glitchy
+(such as inside RStudio's Viewer, on some old browsers, or if the modal contains
+certain Shiny inputs).\cr\cr
+If you notice issues with the UI of the modal, you may want to try to pre-load
+the scripts when the Shiny app initializes by calling \code{useShinyalert(force=TRUE)}
+anywhere in the UI.
 }
 \examples{
 if (interactive()) {
@@ -27,7 +34,7 @@ if (interactive()) {
 
   shinyApp(
     ui = fluidPage(
-      useShinyalert(),  # Set up shinyalert
+      useShinyalert(force = TRUE),  # Set up shinyalert
       actionButton("btn", "Click me")
     ),
     server = function(input, output) {

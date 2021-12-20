@@ -1,3 +1,25 @@
+/* Ensure the modal has a vertical scrollbar if it's too tall */
+.sweet-alert {
+  max-height: calc(100% - 20px);
+  overflow-y: auto;
+  overflow-wrap: break-word;
+}
+
+/* Fix the look of radio buttons and checkboxes that are too big */
+.sweet-alert input[type="radio"],
+.sweet-alert input[type="checkbox"] {
+  height: auto;
+  margin-top: 4px;
+  width: auto;
+}
+
+/* Remove the error section as it's unused but causes a vertical scrollbar when there are no buttons */
+.sweet-alert .sa-input-error {
+  display: none;
+}
+
+/* Try to make inputs look more similar to shiny inputs than sweetalert inputs */
+
 .sweet-alert .shiny-input-container input {
   display: block;
 }
@@ -5,6 +27,8 @@
 .sweet-alert .shiny-input-container:not(.shiny-input-container-inline) {
   width: 100%;
 }
+
+/* Sizing options */
 
 .sweet-alert.alert-size-xs,
 .sweet-alert.alert-size-s,

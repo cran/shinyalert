@@ -1,12 +1,18 @@
 #' Set up a Shiny app to use shinyalert
 #'
-#' This function must be called from a Shiny app's UI in order for the
-#' \code{\link[shinyalert]{shinyalert}} function to work.\cr\cr
-#' You can call \code{useShinyalert()} from anywhere inside the UI.
+#' **This function is no longer required.**\cr\cr
+#' The first time a {shinyalert} message is shown, the required scripts are
+#' *automatically* inserted to the Shiny app. Usually this is not an issue, but
+#' in some unique cases this can sometimes cause the modal to appear glitchy
+#' (such as inside RStudio's Viewer, on some old browsers, or if the modal contains
+#' certain Shiny inputs).\cr\cr
+#' If you notice issues with the UI of the modal, you may want to try to pre-load
+#' the scripts when the Shiny app initializes by calling `useShinyalert(force=TRUE)`
+#' anywhere in the UI.
 #'
-#' @param rmd Set this to \code{TRUE} if using \code{shinyalert}
-#' inside an interactive R markdown document. The YAML of the Rmd file must have
-#' \code{runtime: shiny}.
+#' @param rmd Deprecated, do not use this parameter.
+#' @param force Set to `TRUE` to force pre-loading the {shinyalert} scripts. If
+#' `FALSE` (default), you will get a warning saying this function is not required.
 #' @return Scripts that \code{shinyalert} requires that are automatically
 #' inserted to the app's \code{<head>} tag.
 #' @examples
@@ -16,7 +22,7 @@
 #'
 #'   shinyApp(
 #'     ui = fluidPage(
-#'       useShinyalert(),  # Set up shinyalert
+#'       useShinyalert(force = TRUE),  # Set up shinyalert
 #'       actionButton("btn", "Click me")
 #'     ),
 #'     server = function(input, output) {
@@ -29,35 +35,23 @@
 #' }
 #' @seealso \code{\link[shinyalert]{shinyalert}}
 #' @export
-useShinyalert <- function(rmd = FALSE) {
-  stopifnot(rmd == TRUE || rmd == FALSE)
-
-  shiny::addResourcePath("resources",
-                         system.file("www", package = "shinyalert"))
-  insert_into_doc <- if (rmd) shiny::tagList else shiny::tags$head
-
-  shiny::singleton(
-    insert_into_doc(
-      shiny::tags$script(
-        src = file.path("resources", "shared", "sweetalert-1.0.1",
-                        "js", "sweetalert.min.js")
-      ),
-      shiny::tags$link(
-        rel = "stylesheet",
-        href = file.path("resources", "shared", "sweetalert-1.0.1",
-                         "css", "sweetalert.min.css")
-      ),
-      shiny::tags$script(
-        src = file.path("resources", "shared", "swalservice",
-                        "swalservice.min.js")
-      ),
-      shiny::tags$script(
-        src = file.path("resources", "srcjs", "shinyalert.js")
-      ),
-      shiny::tags$link(
-        rel = "stylesheet",
-        href = file.path("resources", "css", "shinyalert.css")
-      )
+useShinyalert <- function(rmd, force = FALSE) {
+  if (!missing(rmd)) {
+    stop(
+      "The `rmd` parameter of `useShinyalert()` is no longer needed. Please remove it from your code.\n",
+      call. = FALSE
     )
-  )
+  }
+  if (force) {
+    return(getDependencies())
+  } else {
+    warning(
+      "Good news!\nYou don't need to call `useShinyalert()` anymore. Please remove this line from your code.\n",
+      "If you really want to pre-load {shinyalert} to the UI for any reason, use:\n",
+      "\t`useShinyalert(force = TRUE)`",
+      call. = FALSE,
+      immediate. = TRUE
+    )
+    invisible(NULL)
+  }
 }

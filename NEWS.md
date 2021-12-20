@@ -1,3 +1,14 @@
+# shinyalert 3.0.0 (2021-12-20)
+
+- **BREAKING CHANGE** It's no longer required to call `useShinyalert()` in the UI. If you still want to explicitly pre-load the UI scripts, use `useShinyalert(force=TRUE)` (#47) 
+- **BREAKING CHANGE** The `rmd` parameter of `useShinyalert()` is no longer used. If you still want to call `useShinyalert()` (which you don't need to) then you have to remove the `rmd` argument
+- Fixed UI bug: tall modals did not have a scrollbar and you couldn't see the entire content (#44)
+- Fixed UI bug: long strings in the modal got cut off (#53)
+- Fixed UI bug: vertical scrollbar incorrectly appeared when dialog has no buttons (#49)
+- Fixed UI bug: radio buttons and checkboxes did not render correctly (#55)
+- New feature: added `session` parameter to allow advanced uses of shinyalert where the Shiny session isn't immediately accessible (thanks @galachad)
+- New feature: added support for MathJax to render equations (need to call `withMathJax()` in the UI) (#54)
+
 # shinyalert 2.0.0 (2020-09-11)
 
 - **BREAKING CHANGE** Cannot use `html=TRUE` together with `type="input"`, you must instead supply your own Shiny inputs when using HTML
