@@ -90,7 +90,7 @@
 #' }
 #'
 #' @section Modal return value:
-#' Modals created with {shinyalert} have a return value when they exit.
+#' Modals created with \{shinyalert\} have a return value when they exit.
 #'
 #' When using a simple input modal (`type="input"`), the value of the modal is
 #' the value the user entered. Otherwise, the value of the modal is `TRUE` if
@@ -109,7 +109,7 @@
 #' are provided). These functions get called (in R and in JavaScript, respectively)
 #' when the modal exits.
 #'
-#' For example, using the following {shinyalert} code will result in a modal with
+#' For example, using the following \{shinyalert\} code will result in a modal with
 #' an input field. After the user clicks "OK", a hello message will be printed
 #' to both the R console and in a native JavaScript alert box. You don't need to
 #' provide both callback functions, but in this example both are used for
@@ -276,7 +276,7 @@ shinyalert <- function(
   params[['session']] <- NULL
 
   if (is.null(session$userData$.shinyalert_added) || !session$userData$.shinyalert_added) {
-    shiny::insertUI("head", "beforeEnd", getDependencies(), immediate = TRUE)
+    shiny::insertUI("head", "beforeEnd", immediate = TRUE, ui = getDependencies())
     session$userData$.shinyalert_added <- TRUE
   }
 
@@ -300,21 +300,12 @@ shinyalert <- function(
     params[['callbackR']] <- TRUE
   }
 
-
-  if (html && nzchar(params[["text"]])) {
+  if (html && !is.null(params[["text"]]) && (length(params[["text"]]) > 1 || nzchar(as.character(params[["text"]])))) {
     if (type == "input") {
       stop("Cannot use 'input' type and HTML together. You must supply your own Shiny inputs when using HTML.", call. = FALSE)
     }
 
-    shiny::insertUI(
-      "head", "beforeEnd", immediate = FALSE,
-      shiny::tags$head(
-        htmltools::attachDependencies(
-          "",
-          htmltools::findDependencies(params[["text"]])
-        )
-      )
-    )
+    shiny::insertUI("head", "beforeEnd", immediate = FALSE, ui = htmltools::findDependencies(params[["text"]]))
     params[["text"]] <- as.character(params[["text"]])
   }
 
